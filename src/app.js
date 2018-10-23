@@ -4,23 +4,23 @@ const app = {
 
     switch(obj['attack-mode']) {
       case 'closest-first':
-        expectedResponse = this.closest(obj)
+        expectedResponse = this.closest(obj.radar)
         break
 
       case 'furthest-first':
-        expectedResponse = this.furthest(obj)
+        expectedResponse = this.furthest(obj.radar)
         break
 
       case 'avoid-crossfire':
-        expectedResponse = this.avoidCrossfire(obj)
+        expectedResponse = this.avoidCrossfire(obj.radar)
         break
 
       case 'tx-first':
-        expectedResponse = this.txFirst(obj)
+        expectedResponse = this.txFirst(obj.radar)
         break
     }
 
-    return expectedResponse
+    return this.parseTargets(expectedResponse)
   },
 
   distance: function (point) {
@@ -28,7 +28,7 @@ const app = {
   },
 
   closest: function (obj) {
-    const result = obj.radar.reduce((acc, value, index) => {
+    const result = obj.reduce((acc, value, index) => {
       if (acc) {
         if (this.distance(acc.position) < this.distance(value.position)) {
           return acc;
@@ -38,32 +38,31 @@ const app = {
       return value;
     })
 
-
-    return this.selectTargets(result);
+    return result;
   },
 
   furthest: function (obj) {
-    const result = obj.radar.reduce((acc, value, index) => {
+    const result = obj.reduce((acc, value, index) => {
       if (acc) {
         if (this.distance(acc.position) > this.distance(value.position)) {
-          return acc;
+          return acc
         }
       }
 
-      return value;
+      return value
     })
 
-    return this.selectTargets(result);
+    return result
   },
 
   txFirst: function (obj) {
     let radar = []
 
-    for (let i = 0; i <= obj.radar.length - 1; i++) {
-      let objectives = this.selectTargets(obj.radar[i])
+    for (let i = 0; i <= obj.length - 1; i++) {
+      let objectives = obj[i]
       
       let onlyTX = objectives.targets.filter((value) => {
-        return value === 'T-X'
+        return value.type === 'T-X'
       })
       
       if (onlyTX.length > 0) {
@@ -78,10 +77,14 @@ const app = {
   avoidCrossfire: function (obj) {
     let radar = []
 
-    for (let i = 0; i <= obj.radar.length - 1; i++) {
-      let objectives = this.selectTargets(obj.radar[i])
+    for (let i = 0; i <= obj.length - 1; i++) {
+      let objectives = obj[i]
 
-      if (!objectives.targets.includes('Human')) {
+      let withHumans = objectives.targets.filter((value) => {
+        return value.type === "Human"
+      })
+
+      if (withHumans.length <= 0) {
         radar.push(objectives)
       }
     }
@@ -89,16 +92,17 @@ const app = {
     return radar
   },
 
-  selectTargets: function (positionTargets) {
-    const targets = positionTargets.targets.map((value) => {
-      return value.type
-    })
+  parseTargets: function (positionTargets) {
+    if (positionTargets.targets.length > 0) {
+      const targets = positionTargets.targets.map((value) => {
+        return value.type
+      })
 
-    positionTargets.targets = targets
+      positionTargets.targets = targets
+    }
 
     return positionTargets
   }
-
 }
 
 module.exports = app
