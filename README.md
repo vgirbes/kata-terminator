@@ -1,3 +1,5 @@
+<a href="https://codeclimate.com/github/vgirbes/kata-terminator/maintainability"><img src="https://api.codeclimate.com/v1/badges/8386982dff811246fa04/maintainability" /></a>
+
 # kata-terminator
 Estimada Kate Brewster,
 
